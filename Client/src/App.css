@@ -1,0 +1,139 @@
+:root {
+  --color-body: #010101;
+  --color-sidebar-card: #111111;
+  --color-login-grey: #878787;
+  --color-button-grey: rgb(55, 55, 55);
+  --color-white: #ffffff;
+  --color-button-green: #ff0000;
+  --color-button-green-hover: #9e0000;
+  --color-green-dark: #122618;
+  --color-logout: #ff0000;
+  --color-error-cancel: #ff4c4c;
+  --color-succes-confirm: #28a745;
+}
+
+.sidebar.closed {
+  width: 80px;
+}
+
+.sidebar-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 30px;
+}
+
+.logo {
+  width: 50px;
+  height: 50px;
+  margin-bottom: 10px;
+}
+
+.logo-text {
+  font-size: 18px;
+  text-align: center;
+}
+
+.hamburger {
+  font-size: 24px;
+  cursor: pointer;
+  position: absolute;
+  top: 20px;
+  left: 20px;
+}
+
+.menu {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  list-style: none;
+  padding: 0;
+}
+
+.menu-item {
+  display: flex;
+  align-items: center;
+  padding: 10px 25px;
+  font-size: 16px;
+  color: #ffffff;
+  text-decoration: none;
+  transition: border 0.3s ease, color 0.3s ease;
+  border-radius: 16px;
+  border: 2px solid transparent;
+  background-color: transparent;
+}
+
+.menu-item:hover {
+  background-color: transparent;
+  border-radius: 16px;
+  color: var(--color-button-green);
+}
+
+.menu-item span {
+  margin-left: 10px;
+}
+
+.menu-item svg {
+  font-size: 20px;
+}
+
+.main-content {
+  position: absolute;
+  top: 99px;
+  right: 0px;
+  /* margin-left: 200px; */
+  margin: auto;
+  padding: 0px 40px;
+  width: calc(100% - 320px);
+  transition: margin-left 0.3s ease, width 0.3s ease;
+  height: 100vw;
+}
+
+/* Ajuste cuando el sidebar está cerrado */
+.sidebar.closed+.main-content {
+  margin-left: 80px;
+  width: calc(100% - 80px);
+  padding: 40px;
+  /* Mantener el espacio cuando el sidebar está cerrado */
+}
+
+.logout-button:hover {
+  color: var(--color-logout);
+  cursor: pointer;
+}
+
+p {
+  margin: 10px 0px;
+}
+
+button {
+  background-color: transparent;
+  border: none;
+}
+
+.my-swal-popup {
+  border-radius: 18px;
+  /* Ajusta el valor según el nivel de redondez que necesites */
+  border: 2px solid var(--color-button-grey)
+}
+
+@media (max-width: 1000px) {
+  .main-content {
+    width: calc(100% - 180px);
+  }
+}
+
+
+@media (max-width: 700px) {
+  .main-content {
+    width: calc(100% - 140px);
+    padding: 0px 20px;
+  }
+}
+
+@media (max-width: 500px) {
+  .main-content {
+    width: calc(100% - 40px);
+    padding: 0px 20px;
+  }
+}

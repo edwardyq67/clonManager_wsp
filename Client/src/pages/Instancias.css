@@ -1,0 +1,126 @@
+@import url(../App.css);
+
+.toolbar {
+  display: flex;
+  gap: 10px;
+  justify-content: space-between;
+  align-items: center;
+  position: fixed;
+  top: 0;
+  right: 0;
+  z-index: 100000000;
+  width: calc(100% - 320px);
+  padding: 10px 40px;
+  background-color: #01010172;
+  backdrop-filter: blur(20px);
+  color: var(--color-white);
+}
+
+.toolbar h1 {
+  font-size: 2em;
+  margin-bottom: 20px;
+}
+
+.box-input {
+  width: 100% ;
+}
+
+.search-bar {
+  padding: 10px;
+  width: 100% !important;
+  background-color: var(--color-button-grey);
+  border: 2px solid var(--color-button-grey);
+  border-radius: 12px;
+  flex: 1;
+  color: var(--color-white);
+  height: 18px !important;
+  outline: none;
+  transition: border 0.3s ease;
+}
+
+.search-bar:focus {
+  border: 2px solid var(--color-login-grey);
+}
+
+.refresh-button,
+.add-button,
+.status-filter,
+.add-button {
+  background-color: var(--color-sidebar-card);
+  color: var(--color-white);
+  border: 2px solid var(--color-button-grey);
+  padding: 10px;
+  cursor: pointer;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  transition: border 0.3s ease;
+  height: 42px !important;
+  outline: none;
+}
+
+.refresh-button:hover,
+.add-button:hover,
+.status-filter:hover {
+  border: 2px solid var(--color-login-grey);
+}
+
+.status-filter {
+  padding: 8px;
+  height: 40px;
+}
+
+.instance-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 25px;
+  margin-top: 15px;
+  margin-bottom: 20px;
+}
+
+@media (max-width: 1000px) {
+  .toolbar {
+    width: calc(100% - 180px);
+  }
+}
+
+@media (max-width: 700px) {
+
+  .toolbar h1 {
+    margin: 30px 0px 0px 0px;
+  }
+
+  .toolbar {
+    flex-direction: column;
+    padding: 10px 20px;
+    width: calc(100% - 140px)
+  }
+
+  .search-bar,
+  .box-options{
+    width: 100% !important;
+    justify-content: space-between;
+  }
+
+  .instance-grid {
+    margin-top: 110px;
+  }
+
+  .add-button,
+  .status-filter {
+    width: 50%;
+  }
+}
+
+@media (max-width: 500px) {
+
+  .toolbar h1 {
+    font-size: 25px;
+  }
+
+  .toolbar {
+    padding: 10px 20px;
+    width: calc(100% - 40px);
+  }
+
+}

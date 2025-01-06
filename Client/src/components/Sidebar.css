@@ -1,0 +1,171 @@
+@import url(../App.css);
+
+/* Estilo general del sidebar */
+.sidebar {
+  height: 100vh;
+  width: 200px;
+  background-color: var(--color-sidebar-card);
+  color: #ffffff;
+  padding: 20px;
+  position: fixed;
+  top: 0;
+  left: 0;
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.sidebar-icons {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.sidebar-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.sidebar-header .logo {
+  width: auto;
+  height: 50px;
+  margin-bottom: 10px;
+}
+
+.sidebar-header h4 {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0;
+  color: #ffffff;
+}
+
+.menu {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  width: 100%;
+}
+
+/* .menu-item {
+  display: flex;
+  align-items: center;
+  padding: 10px 25px;
+  font-size: 16px;
+  color: #ffffff;
+  text-decoration: none;
+  transition: border 0.3s ease;
+  border-radius: 16px;
+  border: 2px solid transparent;
+  background-color: transparent;
+} */
+
+/* Resalta la opción activa */
+.menu-item.active {
+  /* background-color: var(--color-button-green); */
+  color: var(--color-white);
+  border: 2px solid var(--color-button-green);
+}
+
+/* Efecto de hover mejorado */
+
+.menu-item svg {
+  font-size: 20px;
+}
+
+.menu-item span {
+  margin-left: 10px;
+}
+
+.bottom-section {
+  margin-top: auto;
+}
+
+.logout {
+  margin-bottom: 40px;
+}
+
+.box-ic-menu {
+  display: none;
+  justify-content: center;
+  align-items: center;
+  position: absolute;
+  top: 10px;
+  left: 110px;
+  width: 30px;
+  height: 30px;
+}
+
+.box-ic-menu svg {
+  width: 30px;
+  height: 30px;
+}
+
+@media (max-width: 1000px) {
+
+  .sidebar {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 80px;
+    padding: 20px 10px;
+    height: 100%;
+  }
+
+  .sidebar span {
+    display: none;
+  }
+
+  .menu,
+  .bottom-section {
+    width: 100%;
+  }
+
+  .logout span {
+    display: none;
+  }
+
+  .sidebar li {
+    display: flex;
+    justify-content: center;
+  }
+
+  .menu-item {
+    display: flex !important;
+    justify-content: center;
+  }
+
+  .logout-button svg {
+    width: 20px !important;
+  }
+
+  .menu-item.active {
+    display: flex;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 500px) {
+
+  .box-ic-menu {
+    display: flex;
+  }
+
+  .sidebar {
+    display: flex;
+    left: -100px;
+    z-index: 1000000000;
+  }
+
+  /* Cuando la sidebar está visible */
+  .sidebar-visible {
+    left: 0;
+    /* Mover la sidebar para que sea visible */
+  }
+
+}

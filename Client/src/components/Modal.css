@@ -1,0 +1,146 @@
+@import url(../App.css);
+
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    /* Fondo negro con opacidad */
+    backdrop-filter: blur(5px);
+    /* Desenfoque del fondo */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 100000000;
+}
+
+.modal-content {
+    background: var(--color-sidebar-card);
+    /* Fondo más oscuro */
+    padding: 20px;
+    border-radius: 12px;
+    /* Bordes curvos */
+    border: 2px solid rgb(55, 55, 55);
+    width: 400px;
+    /* Ajustamos el ancho */
+    max-width: 90%;
+    box-shadow: 0 10px 1px rgba(0, 0, 0, 0.5);
+    text-align: center;
+    position: relative;
+    /* Necesario para la posición del botón de cierre */
+}
+
+.modal-content h3 {
+    margin-bottom: 15px;
+    color: var(--color-white);
+    ;
+    font-size: 18px;
+    /* Tamaño más pequeño y uniforme */
+    font-weight: 600;
+    /* Negrita */
+}
+
+.modal-content input {
+    width: 100%;
+    padding: 12px;
+    border-radius: 12px;
+    font-size: 1em;
+    background-color: var(--color-sidebar-card);
+    border: 2px solid var(--color-button-grey);
+    color: var(--color-white);
+    box-sizing: border-box;
+    margin-bottom: 10px;
+    max-width: 100%;
+    margin-right: 0;
+    font-family: 'poppins';
+    font-size: 14px;
+    outline: none;
+    transition: border 0.3s ease;
+}
+
+.modal-content input:hover {
+    border: 2px solid var(--color-login-grey);
+}
+
+.modal-content input:focus {
+    border: 2px solid var(--color-login-grey);
+}
+
+
+.error-message {
+    color: var(--color-error-cancel);
+    margin-top: 0px;
+    margin-bottom: 0px;
+    font-size: 12px;
+}
+
+.modal-buttons {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+}
+
+.btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 12px;
+    /* Ligero redondeo */
+    cursor: pointer;
+    font-weight: 600;
+    width: 48%;
+    font-size: 14px;
+}
+
+.btn-cancel {
+    background: var(--color-error-cancel);
+    color: var(--color-white);
+    width: 30%;
+    ;
+}
+
+.btn-confirm {
+    background: var(--color-succes-confirm);
+    color: var(--color-white);
+    width: 30%;
+    ;
+}
+
+.btn:hover {
+    opacity: 0.9;
+}
+
+.btn:active {
+    transform: scale(0.98);
+}
+
+.btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.qr-image {
+    width: 300px;
+    height: 300px;
+    /* Hacemos que el QR sea más compacto */
+    margin: 20px auto;
+    display: block;
+}
+
+.modal-close {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    border-radius: 8px;
+    font-size: 1.2em;
+    font-weight: bold;
+    cursor: pointer;
+    color: #fff;
+    z-index: 1001;
+    transition: color 0.3s ease;
+}
+
+.modal-close:hover {
+    color: var(--color-error-cancel);
+}
