@@ -202,8 +202,6 @@ export const getWhatsAppSummary = async () => {
 };
 
 export const postWspState = async (idcampania, estado) => {
-  console.log(estado)
-  console.log(idcampania)
   try {
     const response = await axios.post(`${API_URL}/send-whatsapp/estado`, {
       idcampania: idcampania,

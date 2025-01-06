@@ -53,9 +53,9 @@ function Campanas() {
 
   useEffect(() => {
     if (ProgramarFecha.fecha && ProgramarFecha.hora) {
-      const [year, month, day] = ProgramarFecha.fecha.split("-");
-      const formattedDate = `${day}/${month}/${year}, ${ProgramarFecha.hora}`;
-      SetFormatoData(formattedDate)
+      const { fecha, hora } = ProgramarFecha;
+      const isoDate = `${fecha}T${hora}:00`; 
+      SetFormatoData(isoDate);
     }
   }, [ProgramarFecha.fecha, ProgramarFecha.hora]);
 
@@ -241,7 +241,7 @@ function Campanas() {
     if (!validateFields()) return;
 
     try {
-      await registerCampaign(
+    /*   await registerCampaign(
         campaignName,
         campaignTitle,
         campaignText,
@@ -251,8 +251,8 @@ function Campanas() {
         media,
         FormatoData,
         setLoading
-      );
-
+      ); */
+console.log(FormatoData)
       Swal.fire({
         icon: "success",
         title: "Éxito",
