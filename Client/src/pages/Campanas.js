@@ -209,16 +209,29 @@ function Campanas() {
 useEffect(() => {
   let intervalo;
 
-  const verificarGuardarId = () => {
-    if (guardarId !== null) {
-      console.log("hola");
-      
-    } else {
-      clearInterval(intervalo); // Detiene el intervalo si guardarId no es null
+  const verificarGuardarId = async () => {
+    try {
+      const data = await idSendmessagewhatsapp();
+      console.log(data);
+
+      if (data.length === 0) {
+        console.log("Ya no hay más datos.");
+        setLlamarDatosFecha(true)
+        await postWspState(guardarId,3)
+        setGuardarId(null)
+        clearInterval(intervalo);
+       
+      } else {
+        // Procesa los datos obtenidos
+        // Por ejemplo, puedes actualizar el estado con los nuevos datos
+      }
+    } catch (error) {
+      console.error("Error al obtener los datos:", error);
+      clearInterval(intervalo); // Detiene el intervalo en caso de error
     }
   };
 
-  if (guardarId === null) {
+  if (guardarId) {
     verificarGuardarId(); // Llama a la función inmediatamente
     intervalo = setInterval(verificarGuardarId, 5000); // Configura el intervalo para llamar a la función cada 5 segundos
   }
@@ -227,6 +240,7 @@ useEffect(() => {
     clearInterval(intervalo); // Limpia el intervalo cuando el componente se desmonte
   };
 }, [guardarId]);
+
 
   const openModal = () => {
     setCampaignName("");
