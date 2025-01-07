@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import "./Campanas.css";
 import * as XLSX from "xlsx";
-import { registerCampaign, getWhatsAppSummary, postWspState } from "../api";
+import { registerCampaign, getWhatsAppSummary, postWspState,idSendmessagewhatsapp } from "../api";
 import Swal from "sweetalert2";
 import Spinner from "../components/Spinner";
 import {
@@ -31,11 +31,12 @@ function Campanas() {
   const [loading, setLoading] = useState(true);
   const [expandedId, setExpandedId] = useState(null);
   const inputRef = useRef(null);
-  const [programarActiva,setProgramarActiva]=useState(false)
+  const [programarActiva, setProgramarActiva] = useState(false)
   const [ProgramarFecha, setProgramarFecha] = useState({ fecha: null, hora: null });
-  const [FormatoData,SetFormatoData]=useState("")
-  const [llamarDatosFecha,setLlamarDatosFecha]=useState(true)
-  const [datosFechaHora,SetDatosFechaHora]=useState([])
+  const [FormatoData, SetFormatoData] = useState("")
+  const [llamarDatosFecha, setLlamarDatosFecha] = useState(true)
+  const [datosFechaHora, SetDatosFechaHora] = useState([])
+  const [guardarId,setGuardarId]=useState(null)
   const handleDateChange = (e) => {
     const fecha = e.target.value; // Obtiene el valor del input de fecha
     setProgramarFecha((prev) => ({
@@ -55,17 +56,17 @@ function Campanas() {
   useEffect(() => {
     if (ProgramarFecha.fecha && ProgramarFecha.hora) {
       const { fecha, hora } = ProgramarFecha;
-      const isoDate = `${fecha}T${hora}:00`; 
+      const isoDate = `${fecha}T${hora}:00`;
       SetFormatoData(isoDate);
     }
   }, [ProgramarFecha.fecha, ProgramarFecha.hora]);
 
   const formattedProgramarFecha =
-  !programarActiva
-    ? "Programar"
-    : ProgramarFecha.fecha && ProgramarFecha.hora
-    ? "Limpiar campo"
-    : "Programar";
+    !programarActiva
+      ? "Programar"
+      : ProgramarFecha.fecha && ProgramarFecha.hora
+        ? "Limpiar campo"
+        : "Programar";
 
   // Función para obtener el resumen de campañas
   const fetchSummaryData = async (showLoading = true) => {
@@ -114,7 +115,7 @@ function Campanas() {
             ws.send('ejecutar_consulta');
           }
         }, 5000); // Cada 5 segundos
-  
+
         // Limpiar el intervalo al desmontar el componente
         return () => clearInterval(interval);
       }
@@ -127,11 +128,7 @@ function Campanas() {
       try {
         // Intentar parsear los datos si es un JSON
         const dataFH = JSON.parse(message);
-        if (Array.isArray(dataFH)) {
-          SetDatosFechaHora(dataFH)
-        }else{
-          console.log(dataFH)
-        }
+        SetDatosFechaHora(dataFH)
       } catch (error) {
         console.error('Error al procesar el mensaje:', error);
       }
@@ -157,6 +154,79 @@ function Campanas() {
     fetchSummaryData(); // Llamada inicial para cargar los datos con loading
   }, []);
 
+  useEffect(() => {
+    let intervalo;
+
+    const verificarFecha = async () => {
+        try {
+            const fechaUTC = new Date();
+            const fechaLima = new Date(fechaUTC.getTime() - 5 * 60 * 60 * 1000);
+
+            // Ajustar los segundos y milisegundos a 0
+            fechaLima.setSeconds(0);
+            fechaLima.setMilliseconds(0);
+
+            // Convertir a formato ISO sin segundos y milisegundos
+            const fechaLimaISO = fechaLima.toISOString();
+
+            if (fechaLimaISO === datosFechaHora.fechaPendiente?.[0].fecha_pendiente) {
+              const data = await idSendmessagewhatsapp(); 
+                setGuardarId(data[0].idSendmessagewhatsapp)
+                for (const item of datosFechaHora.estadoYego) {
+                    await postWspState(item.IdSendmessage, 0);
+                }
+
+                // Ejecuta postWspState para el primer elemento de fechaPendiente
+                await postWspState(datosFechaHora.fechaPendiente?.[0].IdSendmessage, 3);
+
+                // Desactiva la bandera para evitar bucles infinitos
+                setLlamarDatosFecha(false);
+            } else {
+                console.log("todavía");
+            }
+        } catch (error) {
+            console.error("Error en verificarFecha:", error.message || error);
+        }
+    };
+
+    if (llamarDatosFecha) {
+        // Ejecuta la función inmediatamente
+        verificarFecha();
+
+        // Configura el intervalo para ejecutar la función cada 5 segundos
+        intervalo = setInterval(verificarFecha, 5000);
+    }
+
+    // Limpia el intervalo cuando el componente se desmonte o cuando `llamarDatosFecha` cambie a false
+    return () => {
+        if (intervalo) {
+            clearInterval(intervalo);
+        }
+    };
+}, [llamarDatosFecha, datosFechaHora]);
+
+
+useEffect(() => {
+  let intervalo;
+
+  const verificarGuardarId = () => {
+    if (guardarId !== null) {
+      console.log("hola");
+      
+    } else {
+      clearInterval(intervalo); // Detiene el intervalo si guardarId no es null
+    }
+  };
+
+  if (guardarId === null) {
+    verificarGuardarId(); // Llama a la función inmediatamente
+    intervalo = setInterval(verificarGuardarId, 5000); // Configura el intervalo para llamar a la función cada 5 segundos
+  }
+
+  return () => {
+    clearInterval(intervalo); // Limpia el intervalo cuando el componente se desmonte
+  };
+}, [guardarId]);
 
   const openModal = () => {
     setCampaignName("");
@@ -274,7 +344,7 @@ function Campanas() {
         FormatoData,
         setLoading
       );
-      
+
       Swal.fire({
         icon: "success",
         title: "Éxito",
@@ -302,7 +372,7 @@ function Campanas() {
       });
     }
   };
-console.log(summaryData)
+
   const handleViewClick = (id) => {
     // Si el mismo card ya está expandido, colapsarlo; si no, expandirlo
     setExpandedId(expandedId === id ? null : id);
@@ -310,7 +380,7 @@ console.log(summaryData)
 
   const changeStateCard = async (id, estado) => {
     try {
-      const response = await postWspState(id, estado);
+      const response = postWspState(id, estado);
       Swal.fire({
         icon: "success",
         title: "Éxito",
@@ -596,8 +666,8 @@ console.log(summaryData)
           <div className="custom-modal">
             <div className="custom-modal-header">
               <h2>Crear Campaña</h2>
-              <button className="programar-btn" onClick={()=>setProgramarActiva(!programarActiva)}>
-              {formattedProgramarFecha}
+              <button className="programar-btn" onClick={() => setProgramarActiva(!programarActiva)}>
+                {formattedProgramarFecha}
               </button>
 
               <button className="close-btn" onClick={closeModal}>
@@ -605,11 +675,11 @@ console.log(summaryData)
               </button>
             </div>
             {
-              programarActiva&&<div className="input-date">
-                <input type="date" className="date-input" onChange={handleDateChange}/>
+              programarActiva && <div className="input-date">
+                <input type="date" className="date-input" onChange={handleDateChange} />
                 <input type="time" className="date-input" onChange={handleTimeChange} />
               </div>
-            }   
+            }
             <div>
             </div>
             <div className="custom-modal-body">

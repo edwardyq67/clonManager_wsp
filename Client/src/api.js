@@ -265,3 +265,13 @@ export const login = async (idacceso, contraseña) => {
     throw error;
   }
 };
+
+export const idSendmessagewhatsapp=async()=>{
+  try {
+    const response = await axios.get(`http://10.10.10.10:5000/api/sendwhatsapp/colaenvio/?empresa=yego`);
+    return response.data;
+  } catch (error) {
+    console.error("Error al recuperar instancias:", error);
+    throw error;
+  }
+}
