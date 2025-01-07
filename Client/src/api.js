@@ -1,21 +1,20 @@
 import axios from "axios";
 
 // Base URL para la API
-const API_URL = "http://10.10.2.59:5000/api";
+const API_URL = "http://localhost:5001/api";
 // const API_URL = 'http://10.10.10.3:5000/api';
 
 // Función para obtener las instancias
 export const fetchInstances = async () => {
   try {
     const response = await axios.get(`${API_URL}/instances`);
-    return response.data; // Asegúrate de devolver response.data
+    return response.data;
   } catch (error) {
     console.error("Error al recuperar instancias:", error);
-    throw error; // Opcional: propaga el error para manejarlo en el código
+    throw error;
   }
 };
 
-// Función para crear una nueva instancia
 export const createInstance = async (instanceName) => {
   try {
     const response = await axios.post(`${API_URL}/create-instance`, {
@@ -23,7 +22,7 @@ export const createInstance = async (instanceName) => {
     });
     return response.data;
   } catch (error) {
-    console.error("Error creating instance:", error);
+    console.error("Error al crear la instancia:", error);
     throw error;
   }
 };
@@ -132,21 +131,24 @@ export const registerCampaign = async (
     let imgUrl = ""; // URL de la imagen (inicialmente vacía)
 
     // Si el tipo es "imagen" y media no está vacío, subir la imagen
-    if(tipo === "imagen" || tipo === "video"|| tipo === "pdf") {
+    if (tipo === "imagen" || tipo === "video" || tipo === "pdf") {
       const formImg = new FormData();
       formImg.append("bucket", "masivo");
       formImg.append("file", media);
 
       // Subir la imagen al servidor
-      const imgResponse = await axios.post("https://cloud.3w.pe/media2", formImg, {
-        headers: {
-          'Content-Type': 'multipart/form-data', // Asegúrate de configurar el encabezado
-        },
-      });
+      const imgResponse = await axios.post(
+        "https://cloud.3w.pe/media2",
+        formImg,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data", // Asegúrate de configurar el encabezado
+          },
+        }
+      );
 
       // Obtener la URL de la imagen subida
       imgUrl = imgResponse.data.url;
-
     }
     const requestBody = {
       Campania: campania,
@@ -156,20 +158,30 @@ export const registerCampaign = async (
       Cantidad: cantidad,
       Empresa: "Yego",
       TelefonosNombres: telefonosNombres,
-      Media: imgUrl, 
-      fecha_pendiente:FormatoData
+      Media: imgUrl,
+      fecha_pendiente: FormatoData,
     };
-    const response = await axios.post(`${API_URL}/send-whatsapp/registro`, requestBody);
+    const response = await axios.post(
+      `http://localhost:5000/api/sendwhatsapp/registro`,
+      requestBody,
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
     return response.data;
-    
   } catch (error) {
-    console.error("Error registering campaign:", error.response?.data || error.message);
+    console.error(
+      "Error registering campaign:",
+      error.response?.data || error.message
+    );
     throw error.response?.data || error;
   } finally {
     setLoading(false); // Desactivar el indicador de carga
   }
 };
-
 
 // // Función para obtener el resumen de WhatsApp usando la API local
 // export const getWhatsAppSummary = async () => {

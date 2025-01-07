@@ -33,8 +33,9 @@ function Campanas() {
   const inputRef = useRef(null);
   const [programarActiva,setProgramarActiva]=useState(false)
   const [ProgramarFecha, setProgramarFecha] = useState({ fecha: null, hora: null });
-  const [FormatoData,SetFormatoData]=useState(null)
-
+  const [FormatoData,SetFormatoData]=useState("")
+  const [llamarDatosFecha,setLlamarDatosFecha]=useState(true)
+  const [datosFechaHora,SetDatosFechaHora]=useState([])
   const handleDateChange = (e) => {
     const fecha = e.target.value; // Obtiene el valor del input de fecha
     setProgramarFecha((prev) => ({
@@ -102,16 +103,38 @@ function Campanas() {
 
   useEffect(() => {
     // Crear la conexión WebSocket
-    const ws = new WebSocket('ws://10.10.2.59:8080');
+    const ws = new WebSocket('ws://localhost:8080');
 
     // Evento cuando se abre la conexión
     ws.onopen = () => {
       console.log('Conectado al servidor WebSocket');
+      if (llamarDatosFecha) {
+        const interval = setInterval(() => {
+          if (ws.readyState === WebSocket.OPEN) {
+            ws.send('ejecutar_consulta');
+          }
+        }, 5000); // Cada 5 segundos
+  
+        // Limpiar el intervalo al desmontar el componente
+        return () => clearInterval(interval);
+      }
     };
 
     // Evento cuando se recibe un mensaje del servidor
     ws.onmessage = (event) => {
       fetchSummaryData(false)
+      const message = event.data;
+      try {
+        // Intentar parsear los datos si es un JSON
+        const dataFH = JSON.parse(message);
+        if (Array.isArray(dataFH)) {
+          SetDatosFechaHora(dataFH)
+        }else{
+          console.log(dataFH)
+        }
+      } catch (error) {
+        console.error('Error al procesar el mensaje:', error);
+      }
     };
 
     // Evento cuando se cierra la conexión
@@ -129,12 +152,11 @@ function Campanas() {
       ws.close();
     };
   }, []);
-
-
   // Llamar al API de resumen cada 20 segundos sin mostrar loading
   useEffect(() => {
     fetchSummaryData(); // Llamada inicial para cargar los datos con loading
   }, []);
+
 
   const openModal = () => {
     setCampaignName("");
@@ -147,7 +169,7 @@ function Campanas() {
     setModalIsOpen(true);
     setSelectedFileImagenVideo(null)
     setProgramarActiva(false)
-    SetFormatoData(null)
+    SetFormatoData("")
   };
 
   const closeModal = () => {
@@ -161,7 +183,7 @@ function Campanas() {
     setModalIsOpen(false);
     setSelectedFileImagenVideo(null)
     setProgramarActiva(false)
-    SetFormatoData(null)
+    SetFormatoData("")
   };
 
   useEffect(() => {
@@ -241,7 +263,7 @@ function Campanas() {
     if (!validateFields()) return;
 
     try {
-    /*   await registerCampaign(
+      await registerCampaign(
         campaignName,
         campaignTitle,
         campaignText,
@@ -251,8 +273,8 @@ function Campanas() {
         media,
         FormatoData,
         setLoading
-      ); */
-console.log(FormatoData)
+      );
+      
       Swal.fire({
         icon: "success",
         title: "Éxito",
@@ -288,7 +310,6 @@ console.log(summaryData)
 
   const changeStateCard = async (id, estado) => {
     try {
-      console.log(id, estado)
       const response = await postWspState(id, estado);
       Swal.fire({
         icon: "success",
