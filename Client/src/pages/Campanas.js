@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import "./Campanas.css";
 import * as XLSX from "xlsx";
-import { registerCampaign, getWhatsAppSummary, postWspState,idSendmessagewhatsapp } from "../api";
+import { registerCampaign, getWhatsAppSummary, postWspState, idSendmessagewhatsapp } from "../api";
 import Swal from "sweetalert2";
 import Spinner from "../components/Spinner";
 import {
@@ -36,7 +36,7 @@ function Campanas() {
   const [FormatoData, SetFormatoData] = useState("")
   const [llamarDatosFecha, setLlamarDatosFecha] = useState(true)
   const [datosFechaHora, SetDatosFechaHora] = useState([])
-  const [guardarId,setGuardarId]=useState(null)
+  const [guardarId, setGuardarId] = useState(null)
   const handleDateChange = (e) => {
     const fecha = e.target.value; // Obtiene el valor del input de fecha
     setProgramarFecha((prev) => ({
@@ -103,144 +103,105 @@ function Campanas() {
   };
 
   useEffect(() => {
-    // Crear la conexión WebSocket
-    const ws = new WebSocket('ws://localhost:8080');
-
-    // Evento cuando se abre la conexión
-    ws.onopen = () => {
-      console.log('Conectado al servidor WebSocket');
-      if (llamarDatosFecha) {
-        const interval = setInterval(() => {
-          if (ws.readyState === WebSocket.OPEN) {
-            ws.send('ejecutar_consulta');
-          }
-        }, 5000); // Cada 5 segundos
-
-        // Limpiar el intervalo al desmontar el componente
-        return () => clearInterval(interval);
-      }
-    };
-
-    // Evento cuando se recibe un mensaje del servidor
-    ws.onmessage = (event) => {
-      fetchSummaryData(false)
-      const message = event.data;
-      try {
-        // Intentar parsear los datos si es un JSON
-        const dataFH = JSON.parse(message);
-        SetDatosFechaHora(dataFH)
-      } catch (error) {
-        console.error('Error al procesar el mensaje:', error);
-      }
-    };
-
-    // Evento cuando se cierra la conexión
-    ws.onclose = () => {
-      console.log('Desconectado del servidor WebSocket');
-    };
-
-    // Manejar errores
-    ws.onerror = (error) => {
-      console.error('Error WebSocket:', error);
-    };
-
-    // Limpiar WebSocket cuando el componente se desmonte
-    return () => {
-      ws.close();
-    };
-  }, []);
-  // Llamar al API de resumen cada 20 segundos sin mostrar loading
-  useEffect(() => {
-    fetchSummaryData(); // Llamada inicial para cargar los datos con loading
-  }, []);
-
-  useEffect(() => {
     let intervalo;
 
     const verificarFecha = async () => {
-        try {
-            const fechaUTC = new Date();
-            const fechaLima = new Date(fechaUTC.getTime() - 5 * 60 * 60 * 1000);
+      try {
+        const fechaUTC = new Date();
+        const fechaLima = new Date(fechaUTC.getTime() - 5 * 60 * 60 * 1000);
 
-            // Ajustar los segundos y milisegundos a 0
-            fechaLima.setSeconds(0);
-            fechaLima.setMilliseconds(0);
+        // Ajustar los segundos y milisegundos a 0
+        fechaLima.setSeconds(0);
+        fechaLima.setMilliseconds(0);
 
-            // Convertir a formato ISO sin segundos y milisegundos
-            const fechaLimaISO = fechaLima.toISOString();
+        // Convertir a formato ISO sin segundos y milisegundos
+        const fechaLimaISO = fechaLima.toISOString();
 
-            if (fechaLimaISO === datosFechaHora.fechaPendiente?.[0].fecha_pendiente) {
-              const data = await idSendmessagewhatsapp(); 
-                setGuardarId(data[0].idSendmessagewhatsapp)
-                for (const item of datosFechaHora.estadoYego) {
-                    await postWspState(item.IdSendmessage, 0);
-                }
+        if (fechaLimaISO === datosFechaHora.fechaPendiente?.[0].fecha_pendiente) {
+          const data = await idSendmessagewhatsapp();
+          setGuardarId(data[0].idSendmessagewhatsapp)
+          for (const item of datosFechaHora.estadoYego) {
+            await postWspState(item.IdSendmessage, 0);
+          }
+          await postWspState(datosFechaHora.fechaPendiente?.[0].IdSendmessage, 3);
 
-                // Ejecuta postWspState para el primer elemento de fechaPendiente
-                await postWspState(datosFechaHora.fechaPendiente?.[0].IdSendmessage, 3);
-
-                // Desactiva la bandera para evitar bucles infinitos
-                setLlamarDatosFecha(false);
-            } else {
-                console.log("todavía");
-            }
-        } catch (error) {
-            console.error("Error en verificarFecha:", error.message || error);
+          setLlamarDatosFecha(false);
+        } else {
+          console.log("todavía");
         }
+      } catch (error) {
+        console.error("Error en verificarFecha:", error.message || error);
+      }
     };
 
     if (llamarDatosFecha) {
-        // Ejecuta la función inmediatamente
-        verificarFecha();
-
-        // Configura el intervalo para ejecutar la función cada 5 segundos
-        intervalo = setInterval(verificarFecha, 5000);
+      // Ejecuta la función inmediatamente
+      verificarFecha();
+      intervalo = setInterval(verificarFecha, 5000);
     }
 
     // Limpia el intervalo cuando el componente se desmonte o cuando `llamarDatosFecha` cambie a false
     return () => {
-        if (intervalo) {
-            clearInterval(intervalo);
-        }
-    };
-}, [llamarDatosFecha, datosFechaHora]);
-
-
-useEffect(() => {
-  let intervalo;
-
-  const verificarGuardarId = async () => {
-    try {
-      const data = await idSendmessagewhatsapp();
-      console.log(data);
-
-      if (data.length === 0) {
-        console.log("Ya no hay más datos.");
-        setLlamarDatosFecha(true)
-        await postWspState(guardarId,3)
-        setGuardarId(null)
+      if (intervalo) {
         clearInterval(intervalo);
-       
-      } else {
-        // Procesa los datos obtenidos
-        // Por ejemplo, puedes actualizar el estado con los nuevos datos
       }
-    } catch (error) {
-      console.error("Error al obtener los datos:", error);
-      clearInterval(intervalo); // Detiene el intervalo en caso de error
+    };
+  }, [llamarDatosFecha,datosFechaHora]);
+
+  useEffect(() => {
+    let intervalId; 
+  
+    const fetchData = async () => {
+      try {
+        const response = await idSendmessagewhatsapp();
+        if (response.status === 404) {
+          // No hay más mensajes
+          console.log("Terminado");
+  
+          await postWspState(guardarId, 3);
+          SetDatosFechaHora([]);
+          setLlamarDatosFecha(true);
+
+          setTimeout(() => {
+            clearInterval(intervalId); // Detener el intervalo
+            setGuardarId(null); // Limpiar el ID
+          }, 5000); // 5000 ms = 5 segundos
+        } else if (response.status === 200) {
+          // Hay mensajes nuevos
+          const data = await response.json();
+          console.log("Mensajes recibidos:", data);
+          // Aquí puedes procesar los mensajes (data)
+        }
+      } catch (error) {
+        // Manejo de errores
+        console.log("Error al consultar:", error);
+  
+        // Llamar a postWspState y esperar a que se complete
+        await postWspState(guardarId, 3);
+  
+        // Esperar 2 segundos antes de limpiar el intervalo y guardarId
+        setTimeout(() => {
+          clearInterval(intervalId); // Detener el intervalo
+          setGuardarId(null); // Limpiar el ID
+        }, 2000); // 2000 ms = 2 segundos
+      }
+    };
+  
+    // Ejecutar fetchData inmediatamente si guardarId no es null
+    if (guardarId !== null) {
+      fetchData();
+  
+      // Configurar el intervalo para ejecutar fetchData cada 5 segundos si guardarId no es null
+      intervalId = setInterval(fetchData, 5000);
     }
-  };
-
-  if (guardarId) {
-    verificarGuardarId(); // Llama a la función inmediatamente
-    intervalo = setInterval(verificarGuardarId, 5000); // Configura el intervalo para llamar a la función cada 5 segundos
-  }
-
-  return () => {
-    clearInterval(intervalo); // Limpia el intervalo cuando el componente se desmonte
-  };
-}, [guardarId]);
-
+  
+    // Limpiar el intervalo cuando el componente se desmonte o guardarId cambie
+    return () => {
+      if (intervalId) {
+        clearInterval(intervalId);
+      }
+    };
+  }, [guardarId]); // Dependencia: guardarId
 
   const openModal = () => {
     setCampaignName("");
@@ -422,7 +383,57 @@ useEffect(() => {
       console.error("Error al cambiar el estado de la campaña:", error);
     }
   };
+  useEffect(() => {
+    // Crear la conexión WebSocket
+    const ws = new WebSocket('ws://localhost:8080');
 
+    // Evento cuando se abre la conexión
+    ws.onopen = () => {
+      console.log('Conectado al servidor WebSocket');
+      if (llamarDatosFecha) {
+        const interval = setInterval(() => {
+          if (ws.readyState === WebSocket.OPEN) {
+            ws.send('ejecutar_consulta');
+          }
+        }, 5000); // Cada 5 segundos
+
+        // Limpiar el intervalo al desmontar el componente
+        return () => clearInterval(interval);
+      }
+    };
+
+    // Evento cuando se recibe un mensaje del servidor
+    ws.onmessage = (event) => {
+      fetchSummaryData(false)
+      const message = event.data;
+      try {
+        // Intentar parsear los datos si es un JSON
+        const dataFH = JSON.parse(message);
+        SetDatosFechaHora(dataFH)
+      } catch (error) {
+        console.error('Error al procesar el mensaje:', error);
+      }
+    };
+
+    // Evento cuando se cierra la conexión
+    ws.onclose = () => {
+      console.log('Desconectado del servidor WebSocket');
+    };
+
+    // Manejar errores
+    ws.onerror = (error) => {
+      console.error('Error WebSocket:', error);
+    };
+
+    // Limpiar WebSocket cuando el componente se desmonte
+    return () => {
+      ws.close();
+    };
+  }, []);
+  // Llamar al API de resumen cada 20 segundos sin mostrar loading
+  useEffect(() => {
+    fetchSummaryData(); // Llamada inicial para cargar los datos con loading
+  }, []);
   const renderButtons = (id, estado) => {
     if (estado === 3) {
       // Renderizar en estado pausa
