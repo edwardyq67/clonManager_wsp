@@ -266,9 +266,38 @@ export const login = async (idacceso, contraseña) => {
   }
 };
 
-export const idSendmessagewhatsapp=async()=>{
+export const idSendmessagewhatsapp = async () => {
   try {
-    const response = await axios.get(`http://10.10.10.10:5000/api/sendwhatsapp/colaenvio/?empresa=yego`);
+    const response = await axios.get(`http://localhost:5000/api/sendwhatsapp/colaenvio/?empresa=yego`);
+  
+    return response.data[0].idSendmessagewhatsapp;
+  } catch (error) {
+    // Verificar si el error es un 404
+    if (error.response && error.response.status === 404) {
+      // Capturar el mensaje del servidor
+      const serverMessage = error.response.data.message || "No hay datos disponibles en la cola de envío.";
+      console.log(serverMessage); // Mostrar el mensaje en la consola
+      return { message: serverMessage }; // Devolver el mensaje al usuario
+    } else {
+      // Manejar otros errores
+      console.error("Error al recuperar instancias:", error);
+      throw error;
+    }
+  }
+};
+export const FirstfechaPendienteCached=async()=>{
+  try {
+    const response = await axios.get(`http://localhost:5000/api/sendwhatsapp/FirstfechaPendienteCached`);
+    return response.data[0];
+  } catch (error) {
+    console.error("Error al recuperar instancias:", error);
+    throw error;
+  }
+}
+
+export const MessageActive=async()=>{
+  try {
+    const response = await axios.get(`http://localhost:5000/api/sendwhatsapp/MessageActive`);
     return response.data;
   } catch (error) {
     console.error("Error al recuperar instancias:", error);
