@@ -50,7 +50,7 @@ function Campanas() {
     const timeout = setTimeout(() => {
       setStopInterval(false);
       console.log("El estado de stopInterval se estableció en false.");
-    }, 2 * 60 * 1000); 
+    }, 2 * 60 * 1000);
 
     return () => clearTimeout(timeout);
   }, [stopInterval]);
@@ -81,8 +81,8 @@ function Campanas() {
   const formattedProgramarFecha = !programarActiva
     ? "Programar"
     : ProgramarFecha.fecha && ProgramarFecha.hora
-    ? "Limpiar campo"
-    : "Programar";
+      ? "Limpiar campo"
+      : "Programar";
 
   // Función para obtener el resumen de campañas
   const fetchSummaryData = async (showLoading = true) => {
@@ -175,9 +175,10 @@ function Campanas() {
 
     return () => clearInterval(intervalo); // Limpiar el intervalo al desmontar el componente
   }, [stopInterval]);
-useEffect(()=>{
-  fetchSummaryData();
-},[])
+  console.log(summaryData)
+  useEffect(() => {
+    fetchSummaryData();
+  }, [])
   const openModal = () => {
     setCampaignName("");
     setCampaignTitle("");
@@ -571,19 +572,18 @@ useEffect(()=>{
           {summaryData.length > 0 ? (
             summaryData.map((item, index) => (
               <div
-                className={`card ${
-                  item.idestado === 3
+                className={`card ${item.idestado === 3
                     ? "card-pause"
                     : item.idestado === 0
-                    ? "card-pending"
-                    : item.idestado === 6
-                    ? "card-cancel"
-                    : item.idestado === 4
-                    ? "card-sending"
-                    : item.idestado === 5
-                    ? "card-completed"
-                    : ""
-                }`}
+                      ? "card-pending"
+                      : item.idestado === 6
+                        ? "card-cancel"
+                        : item.idestado === 4
+                          ? "card-sending"
+                          : item.idestado === 5
+                            ? "card-completed"
+                            : ""
+                  }`}
                 key={index}
               >
                 <div className="card-header">
@@ -594,8 +594,8 @@ useEffect(()=>{
                     <span className="hora">
                       {new Date(item.fechaHora).toLocaleTimeString()}
                     </span>
-                    <span className="hora">
-                    {new Date(item.fechaHora).toLocaleTimeString()}
+                    <span className="hora" style={{ color: "white" }}>
+                      {item.fechapendiente && new Date(item.fechapendiente).toLocaleString('es-ES')}
                     </span>
                   </div>
                   {/* Condiciones para renderizar botones en card */}
@@ -616,9 +616,8 @@ useEffect(()=>{
                   </div>
                   {/* Contenido que se expande al hacer clic */}
                   <div
-                    className={`content ${
-                      expandedId === item.idcampania ? "show" : ""
-                    }`}
+                    className={`content ${expandedId === item.idcampania ? "show" : ""
+                      }`}
                   >
                     {item.mensaje}
                   </div>
@@ -710,59 +709,58 @@ useEffect(()=>{
                 {(selectedType === "imagen" ||
                   selectedType === "video" ||
                   selectedType === "pdf") && (
-                  <div className="divfileInputImagenVideo">
-                    <label
-                      className="fileInputImagenVideo"
-                      htmlFor="file-upload-imagen-video"
-                      style={{ cursor: "pointer" }}
-                    >
-                      SELECCIONAR {selectedType}
-                    </label>
-                    <input
-                      onChange={handleFileChange}
-                      type="file"
-                      id="file-upload-imagen-video"
-                      accept={
-                        selectedType === "imagen"
-                          ? "image/jpeg"
-                          : selectedType === "video"
-                          ? "video/mp4"
-                          : ""
-                      }
-                    />
-                    <span className="file-selected">
-                      {selectedFileImagenVideo || "Sin archivos seleccionados"}
-                    </span>
-                  </div>
-                )}
+                    <div className="divfileInputImagenVideo">
+                      <label
+                        className="fileInputImagenVideo"
+                        htmlFor="file-upload-imagen-video"
+                        style={{ cursor: "pointer" }}
+                      >
+                        SELECCIONAR {selectedType}
+                      </label>
+                      <input
+                        onChange={handleFileChange}
+                        type="file"
+                        id="file-upload-imagen-video"
+                        accept={
+                          selectedType === "imagen"
+                            ? "image/jpeg"
+                            : selectedType === "video"
+                              ? "video/mp4"
+                              : ""
+                        }
+                      />
+                      <span className="file-selected">
+                        {selectedFileImagenVideo || "Sin archivos seleccionados"}
+                      </span>
+                    </div>
+                  )}
               </div>
 
               {(selectedType === "imagen" ||
                 selectedType === "video" ||
                 selectedType === "pdf") && (
-                <div className="form-group">
-                  <label htmlFor="campaignTitle">
-                    Título de la Campaña
-                    <span>
-                      {`( Para ${
-                        selectedType === "imagen"
-                          ? "Imagen"
-                          : selectedType === "video"
-                          ? "Video"
-                          : "PDF"
-                      })`}
-                    </span>
-                  </label>
-                  <input
-                    type="text"
-                    id="campaignTitle"
-                    placeholder="Título de la Campaña"
-                    value={campaignTitle}
-                    onChange={handleTitleChange}
-                    className="input-field"
-                  />
-                </div>
-              )}
+                  <div className="form-group">
+                    <label htmlFor="campaignTitle">
+                      Título de la Campaña
+                      <span>
+                        {`( Para ${selectedType === "imagen"
+                            ? "Imagen"
+                            : selectedType === "video"
+                              ? "Video"
+                              : "PDF"
+                          })`}
+                      </span>
+                    </label>
+                    <input
+                      type="text"
+                      id="campaignTitle"
+                      placeholder="Título de la Campaña"
+                      value={campaignTitle}
+                      onChange={handleTitleChange}
+                      className="input-field"
+                    />
+                  </div>
+                )}
               <div className="form-group">
                 <label htmlFor="campaignText">Contenido de la Campaña</label>
                 <textarea
