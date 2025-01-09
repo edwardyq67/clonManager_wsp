@@ -50,7 +50,7 @@ function Campanas() {
     const timeout = setTimeout(() => {
       setStopInterval(false);
       console.log("El estado de stopInterval se estableció en false.");
-    }, 3 * 60 * 1000); 
+    }, 2 * 60 * 1000); 
 
     return () => clearTimeout(timeout);
   }, [stopInterval]);
@@ -119,15 +119,13 @@ function Campanas() {
   };
 
   useEffect(() => {
-    fetchSummaryData();
-    const intervalo = setInterval(async () => {
+    const fetchData = async () => {
       try {
         const response = await FirstfechaPendienteCached();
         const fechaPendiente = response?.fecha_pendiente;
 
         if (!fechaPendiente) {
           const valorIdAnterior = await IdSendmessagewhatsapp();
-          console.log(valorIdAnterior)
           console.log("No hay fecha pendiente definida.");
           return;
         }
@@ -141,34 +139,45 @@ function Campanas() {
         const ahora = new Date();
         const diferencia = Math.abs(ahora - fecha);
 
-        if (diferencia <= 60000) {
+        if (diferencia <= 5000) {
           console.log("¡Ya es hora!");
           const valorIdAnterior = await IdSendmessagewhatsapp();
           const messages = await MessageActive();
+
           if (Array.isArray(messages)) {
             for (const { idSendmessage } of messages) {
               await postWspState(idSendmessage, 0);
             }
           }
-          await postWspState(response?.idSendmessage, 3);
+
+          if (response?.idestado == 0) {
+            await postWspState(response?.idSendmessage, 3);
+          }
+
+          // Esperar 5 segundos antes de continuar
+          await new Promise((resolve) => setTimeout(resolve, 5000));
+
           await postWspState(valorIdAnterior, 3);
-          setStopInterval(true);
+          setStopInterval(true); // Detener el intervalo
         } else {
           console.log("Aún no es hora.");
         }
       } catch (error) {
         console.error("Error en el intervalo:", error);
       }
-    }, 10000); // Intervalo de 10 segundos
+    };
 
-    if (stopInterval) {
-      clearInterval(intervalo); // Limpiar el intervalo si la condición es verdadera
-    }
+    const intervalo = setInterval(async () => {
+      if (!stopInterval) {
+        await fetchData();
+      }
+    }, 10000); // Intervalo de 10 segundos
 
     return () => clearInterval(intervalo); // Limpiar el intervalo al desmontar el componente
   }, [stopInterval]);
-  
-
+useEffect(()=>{
+  fetchSummaryData();
+},[])
   const openModal = () => {
     setCampaignName("");
     setCampaignTitle("");
@@ -584,6 +593,9 @@ function Campanas() {
                     </span>
                     <span className="hora">
                       {new Date(item.fechaHora).toLocaleTimeString()}
+                    </span>
+                    <span className="hora">
+                    {new Date(item.fechaHora).toLocaleTimeString()}
                     </span>
                   </div>
                   {/* Condiciones para renderizar botones en card */}
