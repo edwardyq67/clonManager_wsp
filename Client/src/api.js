@@ -162,7 +162,7 @@ export const registerCampaign = async (
       fecha_pendiente: FormatoData,
     };
     const response = await axios.post(
-      `http://localhost:5000/api/sendwhatsapp/registro`,
+      `${API_URL}/sendwhatsapp/registro`,
       requestBody,
       {
         headers: {

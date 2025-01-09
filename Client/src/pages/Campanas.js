@@ -175,7 +175,6 @@ function Campanas() {
 
     return () => clearInterval(intervalo); // Limpiar el intervalo al desmontar el componente
   }, [stopInterval]);
-  console.log(summaryData)
   useEffect(() => {
     fetchSummaryData();
   }, [])

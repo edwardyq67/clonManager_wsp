@@ -5,7 +5,7 @@ const moment = require("moment-timezone");
 const helmet = require("helmet");
 
 const app = express();
-const PORT = process.env.PORT || 5001;
+const PORT = process.env.PORT || 5000;
 
 const API_BASE_URL = "https://apievo.3w.pe";
 const EXTERNAL_API_BASE_URL = "http://188.245.38.255:5000"; // URL base de la nueva API
@@ -119,7 +119,8 @@ app.post("/api/send-whatsapp/registro", async (req, res) => {
     Cantidad,
     Empresa,
     TelefonosNombres,
-    Media
+    Media,
+    fecha_pendiente,
   } = req.body;
 
   try {
@@ -136,6 +137,7 @@ app.post("/api/send-whatsapp/registro", async (req, res) => {
         Empresa,
         TelefonosNombres,
         Media,
+        fecha_pendiente,
       }
     );
 
