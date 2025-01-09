@@ -1,7 +1,15 @@
 import React, { useState, useRef, useEffect } from "react";
 import "./Campanas.css";
 import * as XLSX from "xlsx";
-import { registerCampaign, getWhatsAppSummary, postWspState, idSendmessagewhatsapp, FirstfechaPendienteCached, MessageActive } from "../api";
+import {
+  registerCampaign,
+  getWhatsAppSummary,
+  postWspState,
+  FirstfechaPendienteCached,
+  IdSendmessagewhatsapp,
+  MessageActive,
+} from "../api";
+
 import Swal from "sweetalert2";
 import Spinner from "../components/Spinner";
 import {
@@ -31,12 +39,21 @@ function Campanas() {
   const [loading, setLoading] = useState(true);
   const [expandedId, setExpandedId] = useState(null);
   const inputRef = useRef(null);
-  const [programarActiva, setProgramarActiva] = useState(false)
-  const [ProgramarFecha, setProgramarFecha] = useState({ fecha: null, hora: null });
-  const [FormatoData, SetFormatoData] = useState("")
-  const [llamarDatosFecha, setLlamarDatosFecha] = useState(true)
-  const [datosFechaHora, SetDatosFechaHora] = useState([])
-  const [guardarId, setGuardarId] = useState(null)
+  const [programarActiva, setProgramarActiva] = useState(false);
+  const [ProgramarFecha, setProgramarFecha] = useState({
+    fecha: null,
+    hora: null,
+  });
+  const [FormatoData, SetFormatoData] = useState("");
+  const [stopInterval, setStopInterval] = useState(false);
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      setStopInterval(false);
+      console.log("El estado de stopInterval se estableció en false.");
+    }, 3 * 60 * 1000); 
+
+    return () => clearTimeout(timeout);
+  }, [stopInterval]);
   const handleDateChange = (e) => {
     const fecha = e.target.value; // Obtiene el valor del input de fecha
     setProgramarFecha((prev) => ({
@@ -61,12 +78,11 @@ function Campanas() {
     }
   }, [ProgramarFecha.fecha, ProgramarFecha.hora]);
 
-  const formattedProgramarFecha =
-    !programarActiva
-      ? "Programar"
-      : ProgramarFecha.fecha && ProgramarFecha.hora
-        ? "Limpiar campo"
-        : "Programar";
+  const formattedProgramarFecha = !programarActiva
+    ? "Programar"
+    : ProgramarFecha.fecha && ProgramarFecha.hora
+    ? "Limpiar campo"
+    : "Programar";
 
   // Función para obtener el resumen de campañas
   const fetchSummaryData = async (showLoading = true) => {
@@ -102,53 +118,57 @@ function Campanas() {
     }
   };
 
- /*  useEffect(() => {
-    const fetchData = async () => {
-      const intervalo = setInterval(async () => {
-        try {
-          const response = await FirstfechaPendienteCached();
-          const fechaPendiente = response?.fecha_pendiente;
+  useEffect(() => {
+    fetchSummaryData();
+    const intervalo = setInterval(async () => {
+      try {
+        const response = await FirstfechaPendienteCached();
+        const fechaPendiente = response?.fecha_pendiente;
 
-          if (!fechaPendiente) {
-            console.log("No hay fecha pendiente definida.");
-            return;
-          }
-
-          const fecha = new Date(fechaPendiente);
-          if (isNaN(fecha.getTime())) {
-            console.error("Fecha pendiente inválida:", fechaPendiente);
-            return;
-          }
-
-          const ahora = new Date();
-          const diferencia = Math.abs(ahora - fecha);
-
-          if (diferencia <= 60000) {
-            console.log("¡Ya es hora!");
-
-            const messages = await MessageActive();
-            if (Array.isArray(messages)) {
-              for (const { idSendmessage } of messages) {
-                await postWspState(idSendmessage, 0);
-              }
-            }
-            console.log(fechaPendiente)
-            await postWspState(fechaPendiente, 3);
-            await new Promise((resolve) => setTimeout(resolve, 60000)); // Esperar 1 minuto
-          } else {
-            console.log("Aún no es hora.");
-          }
-        } catch (error) {
-          console.error("Error en el intervalo:", error);
+        if (!fechaPendiente) {
+          const valorIdAnterior = await IdSendmessagewhatsapp();
+          console.log(valorIdAnterior)
+          console.log("No hay fecha pendiente definida.");
+          return;
         }
-      }, 10000); // Intervalo de 10 segundos
 
-      return () => clearInterval(intervalo);
-    };
+        const fecha = new Date(fechaPendiente);
+        if (isNaN(fecha.getTime())) {
+          console.error("Fecha pendiente inválida:", fechaPendiente);
+          return;
+        }
 
-    fetchData();
-  }, []);
- */
+        const ahora = new Date();
+        const diferencia = Math.abs(ahora - fecha);
+
+        if (diferencia <= 60000) {
+          console.log("¡Ya es hora!");
+          const valorIdAnterior = await IdSendmessagewhatsapp();
+          const messages = await MessageActive();
+          if (Array.isArray(messages)) {
+            for (const { idSendmessage } of messages) {
+              await postWspState(idSendmessage, 0);
+            }
+          }
+          await postWspState(response?.idSendmessage, 3);
+          await postWspState(valorIdAnterior, 3);
+          setStopInterval(true);
+        } else {
+          console.log("Aún no es hora.");
+        }
+      } catch (error) {
+        console.error("Error en el intervalo:", error);
+      }
+    }, 10000); // Intervalo de 10 segundos
+
+    if (stopInterval) {
+      clearInterval(intervalo); // Limpiar el intervalo si la condición es verdadera
+    }
+
+    return () => clearInterval(intervalo); // Limpiar el intervalo al desmontar el componente
+  }, [stopInterval]);
+  
+
   const openModal = () => {
     setCampaignName("");
     setCampaignTitle("");
@@ -158,9 +178,9 @@ function Campanas() {
     setSelectedFile(null);
     setSelectedType("texto");
     setModalIsOpen(true);
-    setSelectedFileImagenVideo(null)
-    setProgramarActiva(false)
-    SetFormatoData("")
+    setSelectedFileImagenVideo(null);
+    setProgramarActiva(false);
+    SetFormatoData("");
   };
 
   const closeModal = () => {
@@ -172,9 +192,9 @@ function Campanas() {
     setSelectedFile(null);
     setSelectedType("texto");
     setModalIsOpen(false);
-    setSelectedFileImagenVideo(null)
-    setProgramarActiva(false)
-    SetFormatoData("")
+    setSelectedFileImagenVideo(null);
+    setProgramarActiva(false);
+    SetFormatoData("");
   };
 
   useEffect(() => {
@@ -197,13 +217,12 @@ function Campanas() {
 
   const handleTypeChange = (e) => {
     setSelectedType(e.target.value);
-
   };
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
-    setmedia(file)
-    setSelectedFileImagenVideo(file.name)
+    setmedia(file);
+    setSelectedFileImagenVideo(file.name);
   };
 
   const handleFileUpload = (e) => {
@@ -235,7 +254,12 @@ function Campanas() {
   };
 
   const validateFields = () => {
-    if (!campaignName || (selectedType !== 'texto' && !campaignTitle) || !campaignText || rowCount === 0) {
+    if (
+      !campaignName ||
+      (selectedType !== "texto" && !campaignTitle) ||
+      !campaignText ||
+      rowCount === 0
+    ) {
       Swal.fire({
         icon: "error",
         title: "Error",
@@ -315,7 +339,7 @@ function Campanas() {
         },
       });
       await fetchSummaryData(false); // Refrescar los datos después de cambiar el estado
-      console.log('Cambio exitoso', response.message);
+      console.log("Cambio exitoso", response.message);
     } catch (error) {
       Swal.fire({
         icon: "error",
@@ -331,26 +355,26 @@ function Campanas() {
   };
   useEffect(() => {
     // Crear la conexión WebSocket
-    const ws = new WebSocket('ws://localhost:8080');
+    const ws = new WebSocket("ws://localhost:8080");
 
     // Evento cuando se abre la conexión
     ws.onopen = () => {
-      console.log('Conectado al servidor WebSocket');
+      console.log("Conectado al servidor WebSocket");
     };
 
     // Evento cuando se recibe un mensaje del servidor
     ws.onmessage = (event) => {
-      fetchSummaryData(false)
+      fetchSummaryData(false);
     };
 
     // Evento cuando se cierra la conexión
     ws.onclose = () => {
-      console.log('Desconectado del servidor WebSocket');
+      console.log("Desconectado del servidor WebSocket");
     };
 
     // Manejar errores
     ws.onerror = (error) => {
-      console.error('Error WebSocket:', error);
+      console.error("Error WebSocket:", error);
     };
 
     // Limpiar WebSocket cuando el componente se desmonte
@@ -359,11 +383,6 @@ function Campanas() {
     };
   }, []);
 
-
-  // Llamar al API de resumen cada 20 segundos sin mostrar loading
-  useEffect(() => {
-    fetchSummaryData(); // Llamada inicial para cargar los datos con loading
-  }, []);
   const renderButtons = (id, estado) => {
     if (estado === 3) {
       // Renderizar en estado pausa
@@ -534,7 +553,6 @@ function Campanas() {
           <a href="/plantilla.xlsx" download>
             <button className="descargar-btn">Descargar Plantilla</button>
           </a>
-
         </div>
       </div>
       {loading ? (
@@ -544,18 +562,19 @@ function Campanas() {
           {summaryData.length > 0 ? (
             summaryData.map((item, index) => (
               <div
-                className={`card ${item.idestado === 3
-                  ? "card-pause"
-                  : item.idestado === 0
+                className={`card ${
+                  item.idestado === 3
+                    ? "card-pause"
+                    : item.idestado === 0
                     ? "card-pending"
                     : item.idestado === 6
-                      ? "card-cancel"
-                      : item.idestado === 4
-                        ? "card-sending"
-                        : item.idestado === 5
-                          ? "card-completed"
-                          : ""
-                  }`}
+                    ? "card-cancel"
+                    : item.idestado === 4
+                    ? "card-sending"
+                    : item.idestado === 5
+                    ? "card-completed"
+                    : ""
+                }`}
                 key={index}
               >
                 <div className="card-header">
@@ -585,8 +604,9 @@ function Campanas() {
                   </div>
                   {/* Contenido que se expande al hacer clic */}
                   <div
-                    className={`content ${expandedId === item.idcampania ? "show" : ""
-                      }`}
+                    className={`content ${
+                      expandedId === item.idcampania ? "show" : ""
+                    }`}
                   >
                     {item.mensaje}
                   </div>
@@ -621,7 +641,10 @@ function Campanas() {
           <div className="custom-modal">
             <div className="custom-modal-header">
               <h2>Crear Campaña</h2>
-              <button className="programar-btn" onClick={() => setProgramarActiva(!programarActiva)}>
+              <button
+                className="programar-btn"
+                onClick={() => setProgramarActiva(!programarActiva)}
+              >
                 {formattedProgramarFecha}
               </button>
 
@@ -629,14 +652,21 @@ function Campanas() {
                 <FaWindowClose />
               </button>
             </div>
-            {
-              programarActiva && <div className="input-date">
-                <input type="date" className="date-input" onChange={handleDateChange} />
-                <input type="time" className="date-input" onChange={handleTimeChange} />
+            {programarActiva && (
+              <div className="input-date">
+                <input
+                  type="date"
+                  className="date-input"
+                  onChange={handleDateChange}
+                />
+                <input
+                  type="time"
+                  className="date-input"
+                  onChange={handleTimeChange}
+                />
               </div>
-            }
-            <div>
-            </div>
+            )}
+            <div></div>
             <div className="custom-modal-body">
               <div className="form-group">
                 <label htmlFor="campaignName">Nombre de la Campaña</label>
@@ -665,7 +695,9 @@ function Campanas() {
                   <option value="pdf">PDF</option>
                 </select>
 
-                {(selectedType === "imagen" || selectedType === "video" || selectedType === "pdf") && (
+                {(selectedType === "imagen" ||
+                  selectedType === "video" ||
+                  selectedType === "pdf") && (
                   <div className="divfileInputImagenVideo">
                     <label
                       className="fileInputImagenVideo"
@@ -678,7 +710,13 @@ function Campanas() {
                       onChange={handleFileChange}
                       type="file"
                       id="file-upload-imagen-video"
-                      accept={selectedType === 'imagen' ? "image/jpeg" : selectedType === 'video' ? "video/mp4" : ""}
+                      accept={
+                        selectedType === "imagen"
+                          ? "image/jpeg"
+                          : selectedType === "video"
+                          ? "video/mp4"
+                          : ""
+                      }
                     />
                     <span className="file-selected">
                       {selectedFileImagenVideo || "Sin archivos seleccionados"}
@@ -687,12 +725,20 @@ function Campanas() {
                 )}
               </div>
 
-              {(selectedType === 'imagen' || selectedType === 'video' || selectedType === "pdf") && (
+              {(selectedType === "imagen" ||
+                selectedType === "video" ||
+                selectedType === "pdf") && (
                 <div className="form-group">
                   <label htmlFor="campaignTitle">
                     Título de la Campaña
                     <span>
-                      {`( Para ${selectedType === 'imagen' ? 'Imagen' : selectedType === 'video' ? 'Video' : 'PDF'})`}
+                      {`( Para ${
+                        selectedType === "imagen"
+                          ? "Imagen"
+                          : selectedType === "video"
+                          ? "Video"
+                          : "PDF"
+                      })`}
                     </span>
                   </label>
                   <input

@@ -266,28 +266,28 @@ export const login = async (idacceso, contraseña) => {
   }
 };
 
-export const idSendmessagewhatsapp = async () => {
+export const IdSendmessagewhatsapp = async () => {
   try {
-    const response = await axios.get(`http://localhost:5000/api/sendwhatsapp/colaenvio/?empresa=yego`);
-  
-    return response.data[0].idSendmessagewhatsapp;
-  } catch (error) {
-    // Verificar si el error es un 404
-    if (error.response && error.response.status === 404) {
-      // Capturar el mensaje del servidor
-      const serverMessage = error.response.data.message || "No hay datos disponibles en la cola de envío.";
-      console.log(serverMessage); // Mostrar el mensaje en la consola
-      return { message: serverMessage }; // Devolver el mensaje al usuario
+    const response = await axios.get(`http://188.245.38.255:5000/api/sendwhatsapp/colaenvio/?empresa=yego`);
+
+    // Verifica si el arreglo tiene datos antes de intentar acceder
+    if (response.data.length > 0 && response.data[0].idSendmessagewhatsapp) {
+      return response.data[0].idSendmessagewhatsapp;
     } else {
-      // Manejar otros errores
-      console.error("Error al recuperar instancias:", error);
-      throw error;
+      return "No hay registros en la cola de envío."; // Mensaje si el arreglo está vacío o no contiene la propiedad
     }
+  } catch (error) {
+    if (error.response && error.response.status === 404) {
+      return "No hay registros en la cola de envío."; // Mensaje para error 404
+    }
+    throw error; // Lanza otros errores
   }
 };
+
+
 export const FirstfechaPendienteCached=async()=>{
   try {
-    const response = await axios.get(`http://localhost:5000/api/sendwhatsapp/FirstfechaPendienteCached`);
+    const response = await axios.get(`http://188.245.38.255:5000/api/sendwhatsapp/FirstfechaPendienteCached`);
     return response.data[0];
   } catch (error) {
     console.error("Error al recuperar instancias:", error);
@@ -297,7 +297,7 @@ export const FirstfechaPendienteCached=async()=>{
 
 export const MessageActive=async()=>{
   try {
-    const response = await axios.get(`http://localhost:5000/api/sendwhatsapp/MessageActive`);
+    const response = await axios.get(`http://188.245.38.255:5000/api/sendwhatsapp/MessageActive`);
     return response.data;
   } catch (error) {
     console.error("Error al recuperar instancias:", error);
