@@ -1,7 +1,7 @@
 import axios from "axios";
 
 // Base URL para la API
-const API_URL = "http://localhost:5001/api";
+const API_URL = "http://10.10.2.59:5000/api";
 // const API_URL = 'http://10.10.10.3:5000/api';
 
 // Función para obtener las instancias
@@ -162,7 +162,7 @@ export const registerCampaign = async (
       fecha_pendiente: FormatoData,
     };
     const response = await axios.post(
-      `${API_URL}/sendwhatsapp/registro`,
+      `${API_URL}/send-whatsapp/registro`,
       requestBody,
       {
         headers: {
@@ -172,6 +172,7 @@ export const registerCampaign = async (
     );
 
     return response.data;
+    
   } catch (error) {
     console.error(
       "Error registering campaign:",
@@ -182,6 +183,7 @@ export const registerCampaign = async (
     setLoading(false); // Desactivar el indicador de carga
   }
 };
+
 
 // // Función para obtener el resumen de WhatsApp usando la API local
 // export const getWhatsAppSummary = async () => {
@@ -268,39 +270,48 @@ export const login = async (idacceso, contraseña) => {
 
 export const IdSendmessagewhatsapp = async () => {
   try {
-    const response = await axios.get(`http://188.245.38.255:5000/api/sendwhatsapp/colaenvio/?empresa=yego`);
+    const response = await axios.get(
+      `http://188.245.38.255:5000/api/sendwhatsapp/colaenvio/?empresa=yego`
+    );
 
     // Verifica si el arreglo tiene datos antes de intentar acceder
     if (response.data.length > 0 && response.data[0].idSendmessagewhatsapp) {
-      return response.data[0].idSendmessagewhatsapp;
+      return response.data[0].idSendmessagewhatsapp; // Devuelve el ID
     } else {
-      return "No hay registros en la cola de envío."; // Mensaje si el arreglo está vacío o no contiene la propiedad
+      return "No hay mensaje"; // Devuelve el mensaje personalizado
     }
   } catch (error) {
     if (error.response && error.response.status === 404) {
-      return "No hay registros en la cola de envío."; // Mensaje para error 404
+      return "No hay mensaje"; // Devuelve el mensaje personalizado en caso de 404
     }
     throw error; // Lanza otros errores
   }
 };
 
+// Uso de la función
+const valorIdAnterior = await IdSendmessagewhatsapp();
+console.log(valorIdAnterior); // Imprime el ID o el mensaje "No hay mensaje"
 
-export const FirstfechaPendienteCached=async()=>{
+export const FirstfechaPendienteCached = async () => {
   try {
-    const response = await axios.get(`http://188.245.38.255:5000/api/sendwhatsapp/FirstfechaPendienteCached`);
+    const response = await axios.get(
+      `http://188.245.38.255:5000/api/sendwhatsapp/FirstfechaPendienteCached`
+    );
     return response.data[0];
   } catch (error) {
     console.error("Error al recuperar instancias:", error);
     throw error;
   }
-}
+};
 
-export const MessageActive=async()=>{
+export const MessageActive = async () => {
   try {
-    const response = await axios.get(`http://188.245.38.255:5000/api/sendwhatsapp/MessageActive`);
+    const response = await axios.get(
+      `http://188.245.38.255:5000/api/sendwhatsapp/MessageActive`
+    );
     return response.data;
   } catch (error) {
     console.error("Error al recuperar instancias:", error);
     throw error;
   }
-}
+};

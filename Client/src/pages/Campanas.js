@@ -22,6 +22,7 @@ import {
   FaTrash,
   FaWindowClose,
   FaCircle,
+  FaRegClock 
 } from "react-icons/fa";
 import { MdClear } from "react-icons/md";
 function Campanas() {
@@ -46,14 +47,22 @@ function Campanas() {
   });
   const [FormatoData, SetFormatoData] = useState("");
   const [stopInterval, setStopInterval] = useState(false);
+  const [valorAnterior, setValorAnterior] = useState(null)
   useEffect(() => {
-    const timeout = setTimeout(() => {
-      setStopInterval(false);
-      console.log("El estado de stopInterval se estableció en false.");
+    const timeout = setTimeout(async () => {
+      const valorIdAnterior = await IdSendmessagewhatsapp();
+      if (valorIdAnterior === "No hay mensaje") {
+        await postWspState(valorAnterior, 3);
+        setStopInterval(false);
+        console.log("El estado de stopInterval se estableció en false.");
+      }else{
+        console.log("pregunra")
+      }
     }, 2 * 60 * 1000);
 
     return () => clearTimeout(timeout);
   }, [stopInterval]);
+
   const handleDateChange = (e) => {
     const fecha = e.target.value; // Obtiene el valor del input de fecha
     setProgramarFecha((prev) => ({
@@ -126,6 +135,11 @@ function Campanas() {
 
         if (!fechaPendiente) {
           const valorIdAnterior = await IdSendmessagewhatsapp();
+          if (valorIdAnterior === "No hay mensaje") {
+            console.log("Pasa al otro");
+          } else {
+            console.log(valorIdAnterior);
+          }
           console.log("No hay fecha pendiente definida.");
           return;
         }
@@ -149,15 +163,10 @@ function Campanas() {
               await postWspState(idSendmessage, 0);
             }
           }
-
           if (response?.idestado == 0) {
             await postWspState(response?.idSendmessage, 3);
           }
-
-          // Esperar 5 segundos antes de continuar
-          await new Promise((resolve) => setTimeout(resolve, 5000));
-
-          await postWspState(valorIdAnterior, 3);
+          setValorAnterior(valorIdAnterior)
           setStopInterval(true); // Detener el intervalo
         } else {
           console.log("Aún no es hora.");
@@ -364,7 +373,7 @@ function Campanas() {
   };
   useEffect(() => {
     // Crear la conexión WebSocket
-    const ws = new WebSocket("ws://localhost:8080");
+    const ws = new WebSocket("ws://10.10.2.59:8080");
 
     // Evento cuando se abre la conexión
     ws.onopen = () => {
@@ -572,16 +581,16 @@ function Campanas() {
             summaryData.map((item, index) => (
               <div
                 className={`card ${item.idestado === 3
-                    ? "card-pause"
-                    : item.idestado === 0
-                      ? "card-pending"
-                      : item.idestado === 6
-                        ? "card-cancel"
-                        : item.idestado === 4
-                          ? "card-sending"
-                          : item.idestado === 5
-                            ? "card-completed"
-                            : ""
+                  ? "card-pause"
+                  : item.idestado === 0
+                    ? "card-pending"
+                    : item.idestado === 6
+                      ? "card-cancel"
+                      : item.idestado === 4
+                        ? "card-sending"
+                        : item.idestado === 5
+                          ? "card-completed"
+                          : ""
                   }`}
                 key={index}
               >
@@ -593,9 +602,6 @@ function Campanas() {
                     <span className="hora">
                       {new Date(item.fechaHora).toLocaleTimeString()}
                     </span>
-                    <span className="hora" style={{ color: "white" }}>
-                      {item.fechapendiente && new Date(item.fechapendiente).toLocaleString('es-ES')}
-                    </span>
                   </div>
                   {/* Condiciones para renderizar botones en card */}
                   <div className="box-buttons">
@@ -603,7 +609,14 @@ function Campanas() {
                   </div>
                 </div>
                 <div className="card-campaign-name">
-                  <h3>{item.campania}</h3>
+                  <h3>{item.campania}{item.fechapendiente && item.fechapendiente !== "1900-01-01T00:00:00" && (
+                      <span className="programer" style={{ color: "white" }}>
+                        {new Date(item.fechapendiente).toLocaleString('es-ES')}
+                      {/*   <FaRegClock className="status-icon" /> */}
+                      </span>
+                    )}
+                    </h3>
+                  
                 </div>
                 <div className="box-view">
                   <div
@@ -743,10 +756,10 @@ function Campanas() {
                       Título de la Campaña
                       <span>
                         {`( Para ${selectedType === "imagen"
-                            ? "Imagen"
-                            : selectedType === "video"
-                              ? "Video"
-                              : "PDF"
+                          ? "Imagen"
+                          : selectedType === "video"
+                            ? "Video"
+                            : "PDF"
                           })`}
                       </span>
                     </label>
